@@ -1,34 +1,26 @@
+%function [ canny_edge_detection
+pkg load image;
 img = imread('in.tif');
 sigma = 2.5;
 % Can we use this function for this assigment?
-img_blurred = imgaussfilt(img, sigma);
-
-%G(x,y) = exp(-(x^2+y^2)/(2*s^2))
-%d/dx G(x, y) = -x/s^2
-%d/dy G(x, y) = -y/s^2
+%gaussian_image = imgaussfilt(img, sigma);
+gaussian_image = img;
+[rows,cols] = size(gaussian_image);
+[FX,FY] = gradient(gaussian_image, 1);
+D = atan2(FY,FX);
+D_degrees = D*(180/pi); 
+angles_quantized = [ 0 45 90 135 ];
 
 % Filtered gradient
-for i = 1:end
-	for j = 1:end
-	Fx(i,j) = -i/(sigma^2);
-	Fy(i,j) = -j(sigma^2);
-	D(i,j) = atan2(Fy,Fx);
-	end
-end
-
-D = D*(180/pi); % Convert radians to degrees
-D_prime = [ 0 45 90 135 ];
-
 % Create thinned image I(x,y)
-for i = 1:end
-	for j = 1:end
-		% For each pixel find direction d* in D*={0,45,90,135}
-		% that is closest to the orientation D at that pixel.
-		options = D_prime - D(i,j);
-		for i = 1:end
-			[m,i] = min(options);
-		end
+for i = 1:rows;
+	for j = 1:cols;
+%		% For each pixel find direction d* in D*={0,45,90,135}
+%		% that is closest to the orientation D at that pixel.
+    theta = D_degrees(i,j);
+		options = abs(angles_quantized - theta); 
+		[min_val,index] = min(options);
 		%If the edge strength F(x,y) is smaller than at least one of its neighbors along D*, set I(x,y) = 0, else set I(x,y) = F(x,y)
-		I(i,j)=D_prime(i);
-	end
-end
+		%I(i,j)=options(i);
+%	end
+%end
